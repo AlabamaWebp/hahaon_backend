@@ -68,7 +68,7 @@ async def neuro(img):
     else:
         weight = (height % 100) - 10  # если узкое — убавляем
 
-    return height, weight
+    return weight, height
 
 @app.post("/api/neuro/")
 async def upload_image(image: UploadFile = File(...)):
