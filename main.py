@@ -35,7 +35,7 @@ def getFaceHeight(img):
   if (len(results) == 0):
     raise HTTPException(status_code=510)
   x_min, y_min, x_max, y_max = results.xyxy[0]
-  return y_max - y_min
+  return [y_max - y_min, x_max-x_min]
 
 def getHeight(img): 
   model_path = hf_hub_download(
@@ -55,12 +55,19 @@ def getHeight(img):
 async def neuro(img): 
     image_data = await img.read()
     img = Image.open(io.BytesIO(image_data)).convert("RGB")
-    face_height = getFaceHeight(img)
-    height_px, weight_px = getHeight(img)
+    face_height, face_width = getFaceHeight(img)
+    height_px, body_width = getHeight(img)
     face_base = 23
     height = int(height_px / face_height * face_base)
-    # normal_scale = 3.25
-    weight = (height % 100) + random.randint(-10, 10)
+    normal_scale = 3.2
+    ratio = body_width / face_width
+    if ratio > normal_scale:
+        weight = (height % 100) + 10  # если тело широкое — прибавляем
+    elif ratio == normal_scale:
+        weight = (height % 100)
+    else:
+        weight = (height % 100) - 10  # если узкое — убавляем
+
     return height, weight
 
 @app.post("/api/neuro/")
