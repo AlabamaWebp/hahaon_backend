@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import io
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -55,13 +56,11 @@ async def neuro(img):
     weight = (height % 100) + random.randint(-10, 10)
     return height, weight
 
-@app.post("/")
+@app.post("neuro/")
 async def upload_image(image: UploadFile = File(...)):
-
-    # file_path = "tmp/img.jpg"
-    # with open(file_path, "wb") as buffer:
-    #     shutil.copyfileobj(image.file, buffer)
-
     return await neuro(image)
+
+app.mount("/", StaticFiles(directory="browser", html=True))
+
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8000)
